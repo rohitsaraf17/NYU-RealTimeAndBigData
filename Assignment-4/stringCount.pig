@@ -1,0 +1,11 @@
+data = LOAD 'SampleInput.txt' as (lines:chararray);
+lower_data = FOREACH data GENERATE LOWER(lines) as (lines:chararray);
+hackathon = FOREACH lower_data GENERATE 'hackathon' as key, ((lines matches '.*hackathon.*') ? 1:0) as count;
+dec = FOREACH lower_data GENERATE 'Dec' as key, ((lines matches '.*dec.*') ? 1:0) as count;
+java = FOREACH lower_data GENERATE 'Java' as key, ((lines matches '.*java.*') ? 1:0) as count;
+chicago = FOREACH lower_data GENERATE 'Chicago' as key, ((lines matches '.*chicago.*') ? 1:0) as count;
+join_data = UNION chicago, dec, java, hackathon;
+result = GROUP join_data by key;
+word_count = FOREACH result GENERATE group, SUM(join_data.count);
+order_result = ORDER word_count BY group;
+STORE order_result INTO 'wordcount_output';
